@@ -1,5 +1,6 @@
 import json
 import hashlib
+import time
 
 from opentelemetry import trace
 from opentelemetry.sdk.resources import Resource
@@ -9,9 +10,7 @@ from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExport
 
 
 resource = Resource.create(
-    {
-        "service.name": "trust-score"
-    }
+    {"service.name": "trust-score"}
 )
 
 provider = TracerProvider(resource=resource)
@@ -52,11 +51,15 @@ class TrustScoreCalculator:
             if round(sum(self.weights.values()), 5) != 1:
                 raise ValueError("Weights should add up to 1.")
 
+            span.set_attribute("validation.status", "success")
+
     def calculate(self):
 
         self.check_inputs()
 
         with tracer.start_as_current_span("Calculate Score") as span:
+
+
             total = 0
             for name in self.scores:
                 total += self.scores[name] * self.weights[name]
@@ -95,6 +98,8 @@ class TrustScoreCalculator:
                 "accountability": "Accountability Risk"
             }
 
+            time.sleep(0.1)
+
             for key, message in checks.items():
                 if self.scores[key] < 60:
                     flags.append(message)
@@ -102,7 +107,7 @@ class TrustScoreCalculator:
             span.set_attribute("flags.count", len(flags))
 
             return flags
-
+        
     def build_evidence(self):
 
         with tracer.start_as_current_span("Create Evidence") as span:
@@ -135,19 +140,24 @@ class TrustScoreCalculator:
 
     def save(self, file_name="evidence.json"):
 
-        data = self.build_evidence()
-        data["sha256"] = self.create_hash(data)
+        with tracer.start_as_current_span("Trust Score ") as root_span:
 
-        with tracer.start_as_current_span("Save Evidence") as span:
+            data = self.build_evidence()
+            data["sha256"] = self.create_hash(data)
 
-            span.set_attribute("file.name", file_name)
+            with tracer.start_as_current_span("Save Evidence") as span:
 
-            with open(file_name, "w") as file:
-                json.dump(data, file, indent=4)
+                span.set_attribute("file.name", file_name)
 
-            span.set_attribute("save.status", "success")
+                with open(file_name, "w") as file:
+                    json.dump(data, file, indent=4)
 
-        return data
+                span.set_attribute("save.status", "success")
+
+            root_span.set_attribute("pipeline.status", "completed")
+
+            return data
+
 
 if __name__ == "__main__":
 
