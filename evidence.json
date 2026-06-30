@@ -1,0 +1,22 @@
+{
+    "scores": {
+        "fairness": 90,
+        "robustness": 85,
+        "privacy": 95,
+        "reliability": 87,
+        "security": 88,
+        "accountability": 82
+    },
+    "weights": {
+        "fairness": 0.2,
+        "robustness": 0.2,
+        "privacy": 0.15,
+        "reliability": 0.15,
+        "security": 0.2,
+        "accountability": 0.1
+    },
+    "trust_score": 88.1,
+    "risk_level": "Low Risk",
+    "risk_flags": [],
+    "sha256": "611604753cb50a03d3265770e833b909f170c2145a451bf2868f812ccb675ab1"
+}
