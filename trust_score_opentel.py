@@ -36,6 +36,7 @@ class TrustScoreCalculator:
 
     def check_inputs(self):
         with tracer.start_as_current_span("Validate Inputs") as span:
+            time.sleep(0.05)
 
             span.set_attribute("total.scores", len(self.scores))
             span.set_attribute("total.weights", len(self.weights))
@@ -59,7 +60,7 @@ class TrustScoreCalculator:
 
         with tracer.start_as_current_span("Calculate Score") as span:
 
-
+            time.sleep(0.07)
             total = 0
             for name in self.scores:
                 total += self.scores[name] * self.weights[name]
